@@ -1,7 +1,9 @@
-from typing import Union
+from typing import Union, Any
 from database import models
 
-def individual_data(link: Union[Any, None]) -> models.DangerousLink: 
+def individual_data(link: Union[Any, None]) -> Union[models.DangerousLink, None]: 
+    if not link:
+        return None
     return {
         "id": str(link['_id']),
         "full_url": link['full_url'],

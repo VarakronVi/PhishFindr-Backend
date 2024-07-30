@@ -55,7 +55,8 @@ def classify_url_content(base_url: str) -> bool:
         'discount': content.count('discount'),
         '120': content.count('120'),
         'นธ': content.count('นธ'),
-        'javascript': content.count('javascript')
+        'javascript': content.count('javascript'),
+        'ªà': content.count('ªà')
         # Add more features as needed based on your classification model
     }
 
