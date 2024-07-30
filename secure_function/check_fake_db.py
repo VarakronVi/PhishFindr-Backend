@@ -305,7 +305,7 @@ from database import cofig, schemas
 
 def getLinkByName(domain_name: str):
     data = cofig.collection.find_one({'domain_name': domain_name})
-    return data
+    return schemas.individual_data(data)
 
 def check_fake_url_db(host_name: str):
     link = getLinkByName(host_name)

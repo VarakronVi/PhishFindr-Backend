@@ -1,4 +1,7 @@
-def individual_data(link):
+from typing import Union
+from database import models
+
+def individual_data(link: Union[Any, None]) -> models.DangerousLink: 
     return {
         "id": str(link['_id']),
         "full_url": link['full_url'],
