@@ -37,7 +37,7 @@ def is_link_secue(link: str) -> Union[str, None]:
     print('------------------------')
     print('check dct')
     if not pass_dct:
-        return '80%'
+        return 'secure 80% \n threat content alert'
         # return 'Inapproprite content such as gambling'
 
     return None
