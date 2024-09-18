@@ -42,36 +42,3 @@ def is_link_secue(link: str) -> Union[str, None]:
 
     return None
 
-
-
-
-
-# def check_google_safe_browsing(url):
-#     return 'lee'
-
-
-# def check_ssl_certificate(url):
-#     return 'lee' 
-
-
-# def check_fake_url_list(url):
-#     return 'lee' 
-
-
-# def check_url_content(url):
-#     return 'lee'
-
-
-# def check_url_safety(url):
-
-#     # Check Google
-#     check_google_safe_browsing()
-
-#     # Check SSL
-#     check_ssl_certificate()
-
-#     # Check FAKE DB
-#     check_fake_url_list()
-    
-#     # Check Butiful, Decision tree
-#     check_url_content(url)
