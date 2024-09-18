@@ -1,108 +1,69 @@
 import requests
-import re
+import joblib
+import requests
+import os
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+from PIL import Image
+from io import BytesIO
+import pytesseract
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-def extract_text_content(base_url: str) -> str:
+
+def extract_text_from_url(url: str, max_images=3):
+    session = requests.Session()
+    retry = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
     try:
-        response = requests.get(base_url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        text = soup.get_text()
-        words = re.findall(r'\b\w+\b', text.lower())
-        common_words = set(["the", "and", "to", "of", "a", "in", "for", "is", "on", "that", "by", "this", "with", "i", "you", "it", "not", "or", "be", "are", 'เป็น', 'อยู่', 'คือ', 'หรือ', 'และ', 'ใน'])
-        filtered_words = [word for word in words if word not in common_words]
-        return ' '.join(filtered_words)
-    except Exception as e:
-        print(f'Error fetching {base_url}: {e}')
-        return ''
-    
+        response = session.get(url, timeout=5)  # Removed verify=False for security
+        response.raise_for_status()  # Raise an error for bad responses (e.g., 404)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-def classify_url(features) -> bool: 
-    if features['ครสมาช'] <= 0.5:
-        if features['ªà'] <= 7.5:
-            if features['javascript'] <= 0.5:
-                return True
-            else:  # if features['javascript'] > 0.5
-                return False
-        else:  # if features['ªà'] > 7.5
-            return False
-    else:  # if features['ครสมาช'] > 0.5
-        if features['นธ'] <= 2.5:
-            return False
-        else:  # if features['นธ'] > 2.5
-            return True
+        # Extract text from HTML
+        text = soup.get_text(separator=' ', strip=True)
 
+        # Extract images and use OCR, but limit to max_images
+        images = soup.find_all('img')[:max_images]
+        for img in images:
+            img_url = urljoin(url, img.get('src'))  # Handle relative URLs
+            if img_url:
+                try:
+                    img_response = session.get(img_url, stream=True, timeout=5)
+                    img_response.raise_for_status()  # Ensure valid image response
+                    img = Image.open(BytesIO(img_response.content))
+                    # Perform OCR, add OCR language support if needed (e.g., lang='tha')
+                    text += " " + pytesseract.image_to_string(img)
+                    img.close()  # Close the image after processing
+                except Exception as e:
+                    print(f"Error processing image: {e}")
+                    continue  # Skip any OCR errors
 
-# Function to classify URL based on extracted features
-def classify_url_content(base_url: str) -> bool:
-    content = extract_text_content(base_url)
-    if not content:
-        print("Unable to classify URL due to content extraction failure.")
-        return False
-
-    # Implement your classification logic here based on extracted features
-    # Example classification based on specific features (mock-up)
-    features = {
-        'ครสมาช': content.count('ครสมาช'),
-        'à¹': content.count('à¹'),
-        '2024': content.count('2024'),
-        'continue': content.count('continue'),
-        'vite': content.count('vite'),
-        'อมข': content.count('อมข'),
-        'กหวยไม': content.count('กหวยไม'),
-        'tradingfutures': content.count('tradingfutures'),
-        'บาทละ': content.count('บาทละ'),
-        '8a292ab70b3fc3aa': content.count('8a292ab70b3fc3aa'),
-        'discount': content.count('discount'),
-        '120': content.count('120'),
-        'นธ': content.count('นธ'),
-        'javascript': content.count('javascript'),
-        'ªà': content.count('ªà')
-        # Add more features as needed based on your classification model
-    }
-
-    classify_result = classify_url(features)
-
-    return classify_result
+        return text
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching URL: {e}")
+        return ""
+    finally:
+        session.close()
 
 
-        
-    # if features['ครสมาช'] <= 0.5:
-    #     if features['à¹'] <= 10.5:
-    #         if features['2024'] <= 0.5:
-    #             if features['continue'] <= 0.5:
-    #                 if features['vite'] <= 0.5:
-    #                     if features['อมข'] <= 0.5:
-    #                         if features['กหวยไม'] <= 0.5:
-    #                             if features['tradingfutures'] <= 1.0:
-    #                                 if features['บาทละ'] <= 0.5:
-    #                                     if features['8a292ab70b3fc3aa'] <= 0.5:
-    #                                         return True
-    #                                     else:  # if features['8a292ab70b3fc3aa'] > 0.5
-    #                                         return False
-    #                                 else:  # if features['บาทละ'] > 0.5
-    #                                     return False
-    #                             else:  # if features['tradingfutures'] > 1.0
-    #                                 return False
-    #                         else:  # if features['กหวยไม'] > 0.5
-    #                             return False
-    #                     else:  # if features['อมข'] > 0.5
-    #                         return False
-    #                 else:  # if features['vite'] > 0.5
-    #                     return False
-    #             else:  # if features['continue'] > 0.5
-    #                 if features['discount'] <= 0.5:
-    #                     return False
-    #                 else:  # if features['discount'] > 0.5
-    #                     return True
-    #         else:  # if features['2024'] > 0.5
-    #             return True
-    #     else:  # if features['à¹'] > 10.5
-    #         if features['120'] <= 0.5:
-    #             return False
-    #         else:  # if features['120'] > 0.5
-    #             return True
-    # else:  # if features['ครสมาช'] > 0.5
-    #     if features['นธ'] <= 2.5:
-    #         return False
-    #     else:  # if features['นธ'] > 2.5
-    #         return True
+# Function to classify a new URL
+def classify_url(url: str):
+
+    # Load the model from the uploaded file
+    model_filename = os.path.join('ML', 'SVM_with_OCR.pkl')
+    # model_filename = 'SVM_with_OCR.pkl'
+    pipeline = joblib.load(model_filename)
+    print(f"Model loaded from {model_filename}")
+
+    text = extract_text_from_url(url)
+    print(f"Extracted text from {url}:\n{text}") #--> ใช้ check ว่าในเว็บได้คำอะไรบ้าง
+#    if not text:
+#        return "Could not extract text from the URL"  #---> แจ้งเตือนไม่สามารถ extract text ออกมาได้เพราะมีการป้องกัน
+
+    prediction = pipeline.predict([text])
+    print(prediction)
+    return True if prediction[0] == 1 else False

@@ -23,6 +23,7 @@ async def link(request: URLRequest) -> dict[str, Union[str, None]]:
     secure = 'not-secured'
 
     result = is_link_secue(link)
+    print(result)
     if result is None:
         secure = 'secured'
 

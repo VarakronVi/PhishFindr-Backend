@@ -33,11 +33,11 @@ def is_link_secue(link: str) -> Union[str, None]:
     
 
     # Check Decision tree
-    pass_dct = decision_tree.classify_url_content(base_url)
+    pass_dct = decision_tree.classify_url(base_url)
     print('------------------------')
     print('check dct')
     if not pass_dct:
-        return 'secure 80% \n threat content alert'
+        return 'secure 80% \n         threat content alert'
         # return 'Inapproprite content such as gambling'
 
     return None
