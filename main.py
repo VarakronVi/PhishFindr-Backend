@@ -22,14 +22,23 @@ async def link(request: URLRequest) -> dict[str, Union[str, None]]:
     link = request.url
     secure = 'not-secured'
 
+    # result = is_link_secue(link)
+    # print(result)
+    # if result is None:
+    #     secure = 'secured'
+
     result = is_link_secue(link)
     print(result)
-    if result is None:
+    if result == 'db fail' or result == 'ssl fail':
+        secure = 'not-secured'
+    elif result == 'dct secured 80%':
+        secure = "partial"
+    else:
         secure = 'secured'
 
     return {
         'is_secured': secure,
-        'failed_by': result,
+        'failed_by': result 
     }
 
 

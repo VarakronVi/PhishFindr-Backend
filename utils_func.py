@@ -18,7 +18,7 @@ def is_link_secue(link: str) -> Union[str, None]:
     print('------------------------')
     print('check db')
     if in_fake_db:
-        return '100%'
+        return 'db fail'
         # return 'Fake or Phishing URL by database'
 
     # Check SSL
@@ -26,19 +26,19 @@ def is_link_secue(link: str) -> Union[str, None]:
     print('------------------------')
     print('check ssl')
     if not ssl_url:
-        return '100%'
+        return 'ssl fail'
         # return 'SSL certificate is not valid'
 
     # Check Google
     
 
     # Check Decision tree
-    pass_dct = decision_tree.classify_url(base_url)
+    pass_dct = decision_tree.classify_url(link)
     print('------------------------')
     print('check dct')
     if not pass_dct:
-        return 'secure 80% \n         threat content alert'
+        return 'dct secured 80%'
         # return 'Inapproprite content such as gambling'
 
-    return None
+    return 'pass'
 
